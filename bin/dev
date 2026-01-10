@@ -8,4 +8,5 @@ export PORT="${PORT:-3000}"
 export RUBY_DEBUG_OPEN="true"
 export RUBY_DEBUG_LAZY="true"
 
-exec bundle exec foreman start -f Procfile.dev "$@"
+# Use bin/bundle which uses the correct Ruby from .ruby-version
+exec bin/bundle exec foreman start -f Procfile.dev "$@"

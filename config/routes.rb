@@ -2,7 +2,9 @@ Rails.application.routes.draw do
   get "home/index"
   root "home#index"
   
-  get '/auth/:provider/callback', to: 'sessions#create'
+  # OAuth routes - POST for initiation (CSRF-safe), GET for callback
+  post '/auth/:provider', to: 'omniauth#passthru', as: :omniauth_authorize
+  get '/auth/:provider/callback', to: 'sessions#create', as: :omniauth_callback
   get '/auth/failure', to: 'sessions#failure'
   delete '/logout', to: 'sessions#destroy', as: :logout
 

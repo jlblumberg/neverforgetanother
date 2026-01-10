@@ -9,8 +9,8 @@
   <% else %>
     <div class="space-y-4">
       <p class="text-lg mb-6">Schedule SMS and email reminders so you don't forget to do things.</p>
-      <%= link_to "/auth/google", class: "inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition" do %>
-        Sign in with Google
+      <%= form_with url: "/auth/google", method: :post, local: true, data: { turbo: false }, class: "inline-block" do |f| %>
+        <%= f.submit "Sign in with Google", class: "bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition border-0 cursor-pointer" %>
       <% end %>
     </div>
   <% end %>
