@@ -1,0 +1,17 @@
+<div class="w-full">
+  <h1 class="font-bold text-4xl mb-4">Never Forget Another</h1>
+  
+  <% if logged_in? %>
+    <div class="space-y-4">
+      <p class="text-lg">Welcome, <%= current_user.email %>!</p>
+      <p class="text-gray-600">You're successfully logged in.</p>
+    </div>
+  <% else %>
+    <div class="space-y-4">
+      <p class="text-lg mb-6">Schedule SMS and email reminders so you don't forget to do things.</p>
+      <%= link_to "/auth/google", class: "inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition" do %>
+        Sign in with Google
+      <% end %>
+    </div>
+  <% end %>
+</div>
