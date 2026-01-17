@@ -1,0 +1,65 @@
+<div class="w-full">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="font-bold text-4xl">My Reminders</h1>
+    <div class="flex gap-2">
+      <% if @show_cancelled %>
+        <%= link_to "Show Active Only", reminders_path, class: "bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition text-sm" %>
+      <% else %>
+        <%= link_to "Show Cancelled", reminders_path(show_cancelled: true), class: "bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition text-sm" %>
+      <% end %>
+      <%= link_to "New Reminder", new_reminder_path, class: "bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition border-0 cursor-pointer" %>
+    </div>
+  </div>
+
+  <% if @reminders.any? %>
+    <div class="space-y-4">
+      <% @reminders.each do |reminder| %>
+        <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition">
+          <div class="flex justify-between items-start">
+            <div class="flex-1">
+              <h2 class="font-bold text-xl mb-2">
+                <%= link_to reminder.title, reminder, class: "text-gray-900 hover:text-blue-600" %>
+              </h2>
+              <p class="text-gray-600 mb-3"><%= reminder.description %></p>
+              <div class="flex flex-wrap gap-4 text-sm text-gray-500">
+                <span>
+                  <strong>Starts:</strong> 
+                  <%= reminder.started.in_time_zone(current_user.timezone).strftime("%B %d, %Y at %I:%M %p") %>
+                </span>
+                <span>
+                  <strong>Period:</strong> <%= reminder.period.humanize %>
+                </span>
+                <span>
+                  <strong>Delivery:</strong> <%= reminder.delivery_methods_humanized %>
+                </span>
+                <% if reminder.cancelled.present? %>
+                  <span class="text-red-600">
+                    <strong>Cancelled:</strong> <%= reminder.cancelled.in_time_zone(current_user.timezone).strftime("%B %d, %Y") %>
+                  </span>
+                <% else %>
+                  <span class="text-green-600 font-semibold">Active</span>
+                <% end %>
+              </div>
+            </div>
+            <div class="flex gap-2 ml-4">
+              <%= link_to "Edit", edit_reminder_path(reminder), class: "text-blue-600 hover:text-blue-800 text-sm" %>
+              <% if reminder.cancelled.present? %>
+                <%= button_to "Reactivate", uncancel_reminder_path(reminder), method: :post, 
+                    class: "text-green-600 hover:text-green-800 text-sm" %>
+              <% else %>
+                <%= button_to "Cancel", cancel_reminder_path(reminder), method: :post, 
+                    data: { confirm: "Are you sure you want to cancel this reminder?" }, 
+                    class: "text-red-600 hover:text-red-800 text-sm" %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-12 text-center">
+      <p class="text-gray-600 text-lg mb-4">You don't have any reminders yet.</p>
+      <%= link_to "Create your first reminder", new_reminder_path, class: "bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition inline-block" %>
+    </div>
+  <% end %>
+</div>

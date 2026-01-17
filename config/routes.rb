@@ -2,6 +2,13 @@ Rails.application.routes.draw do
   get "home/index"
   root "home#index"
   
+  resources :reminders do
+    member do
+      post :cancel
+      post :uncancel
+    end
+  end
+  
   # OAuth routes - POST for initiation (CSRF-safe), GET for callback
   post '/auth/:provider', to: 'omniauth#passthru', as: :omniauth_authorize
   get '/auth/:provider/callback', to: 'sessions#create', as: :omniauth_callback

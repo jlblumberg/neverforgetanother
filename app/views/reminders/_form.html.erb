@@ -1,0 +1,78 @@
+<%= form_with model: @reminder, local: true, class: "space-y-6" do |f| %>
+  <% if @reminder.errors.any? %>
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
+      <h3 class="font-bold mb-2"><%= pluralize(@reminder.errors.count, "error") %> prohibited this reminder from being saved:</h3>
+      <ul class="list-disc list-inside">
+        <% @reminder.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :title, class: "block text-sm font-medium text-gray-700 mb-2" %>
+    <%= f.text_field :title, 
+        maxlength: 25, 
+        class: "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
+        placeholder: "Max 25 characters" %>
+    <p class="mt-1 text-sm text-gray-500">Required, maximum 25 characters</p>
+  </div>
+
+  <div>
+    <%= f.label :description, class: "block text-sm font-medium text-gray-700 mb-2" %>
+    <%= f.text_area :description, 
+        maxlength: 100, 
+        rows: 3,
+        class: "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
+        placeholder: "Max 100 characters" %>
+    <p class="mt-1 text-sm text-gray-500">Required, maximum 100 characters</p>
+  </div>
+
+  <div>
+    <%= f.label :started, "Start Date & Time", class: "block text-sm font-medium text-gray-700 mb-2" %>
+    <%= f.datetime_local_field :started, 
+        value: @reminder.started&.in_time_zone(current_user.timezone)&.strftime("%Y-%m-%dT%H:%M"),
+        class: "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+    <p class="mt-1 text-sm text-gray-500">Time shown in your timezone: <%= current_user.timezone %></p>
+  </div>
+
+  <div>
+    <%= f.label :period, class: "block text-sm font-medium text-gray-700 mb-2" %>
+    <%= f.select :period, 
+        options_for_select([
+          ['One-time', 'one_off'],
+          ['Daily', 'daily'],
+          ['Weekly', 'weekly'],
+          ['Monthly', 'monthly'],
+          ['Quarterly', 'quarterly'],
+          ['Yearly', 'yearly']
+        ], @reminder.period),
+        {},
+        { class: "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" } %>
+  </div>
+
+  <div>
+    <%= f.label "Delivery Methods", class: "block text-sm font-medium text-gray-700 mb-2" %>
+    <div class="space-y-2">
+      <div class="flex items-center">
+        <%= f.check_box :email_enabled, class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" %>
+        <%= f.label :email_enabled, "Email", class: "ml-2 text-sm text-gray-700" %>
+      </div>
+      <div class="flex items-center">
+        <%= f.check_box :sms_enabled, class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" %>
+        <%= f.label :sms_enabled, "SMS", class: "ml-2 text-sm text-gray-700" %>
+        <% if @reminder.sms_enabled? && current_user.phone.blank? %>
+          <span class="ml-2 text-xs text-amber-600">⚠️ Phone number required</span>
+        <% end %>
+      </div>
+    </div>
+    <p class="mt-1 text-sm text-gray-500">Select at least one delivery method</p>
+  </div>
+
+  <div class="flex gap-4">
+    <%= f.submit class: "bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition border-0 cursor-pointer" %>
+    <%= link_to "Cancel", reminders_path, class: "bg-gray-200 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-300 transition" %>
+  </div>
+<% end %>
+

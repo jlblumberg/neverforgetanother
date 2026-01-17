@@ -1,0 +1,61 @@
+<div class="w-full max-w-2xl">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="font-bold text-4xl"><%= @reminder.title %></h1>
+    <div class="flex gap-2">
+      <%= link_to "Edit", edit_reminder_path(@reminder), class: "bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition" %>
+      <% if @reminder.cancelled.present? %>
+        <%= button_to "Reactivate", uncancel_reminder_path(@reminder), method: :post, 
+            class: "bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition" %>
+      <% else %>
+        <%= button_to "Cancel", cancel_reminder_path(@reminder), method: :post, 
+            data: { confirm: "Are you sure you want to cancel this reminder?" }, 
+            class: "bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition" %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="bg-white border border-gray-200 rounded-lg p-6 space-y-4">
+    <div>
+      <h2 class="text-sm font-medium text-gray-500 mb-1">Description</h2>
+      <p class="text-gray-900"><%= @reminder.description %></p>
+    </div>
+
+    <div>
+      <h2 class="text-sm font-medium text-gray-500 mb-1">Start Date & Time</h2>
+      <p class="text-gray-900">
+        <%= @reminder.started.in_time_zone(current_user.timezone).strftime("%B %d, %Y at %I:%M %p") %>
+        <span class="text-gray-500 text-sm">(<%= current_user.timezone %>)</span>
+      </p>
+    </div>
+
+    <div>
+      <h2 class="text-sm font-medium text-gray-500 mb-1">Recurrence</h2>
+      <p class="text-gray-900"><%= @reminder.period.humanize %></p>
+    </div>
+
+    <div>
+      <h2 class="text-sm font-medium text-gray-500 mb-1">Delivery Methods</h2>
+      <p class="text-gray-900"><%= @reminder.delivery_methods_humanized %></p>
+    </div>
+
+    <div>
+      <h2 class="text-sm font-medium text-gray-500 mb-1">Status</h2>
+      <% if @reminder.cancelled.present? %>
+        <p class="text-red-600">
+          Cancelled on <%= @reminder.cancelled.in_time_zone(current_user.timezone).strftime("%B %d, %Y") %>
+        </p>
+      <% else %>
+        <p class="text-green-600 font-semibold">Active</p>
+        <% if @reminder.next_send_time %>
+          <p class="text-gray-600 text-sm mt-1">
+            Next send: <%= @reminder.next_send_time.in_time_zone(current_user.timezone).strftime("%B %d, %Y at %I:%M %p") %>
+          </p>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="mt-6">
+    <%= link_to "← Back to Reminders", reminders_path, class: "text-blue-600 hover:text-blue-800" %>
+  </div>
+</div>

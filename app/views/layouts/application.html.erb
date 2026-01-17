@@ -28,9 +28,10 @@
         <div class="font-bold text-xl">
           <%= link_to "Never Forget Another", root_path, class: "text-gray-900 hover:text-gray-700" %>
         </div>
-        <div>
+        <div class="flex items-center gap-4">
           <% if logged_in? %>
-            <span class="text-gray-600 mr-4"><%= current_user.email %></span>
+            <%= link_to "Reminders", reminders_path, class: "text-gray-600 hover:text-gray-900" %>
+            <span class="text-gray-600"><%= current_user.email %></span>
             <%= button_to "Sign out", logout_path, method: :delete, class: "text-gray-600 hover:text-gray-900" %>
           <% end %>
         </div>
