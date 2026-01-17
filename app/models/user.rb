@@ -5,7 +5,7 @@ class User < ApplicationRecord
   validates :provider, presence: true
   validates :uid, presence: true
   validates :phone, format: { with: /\A\+?[1-9]\d{1,14}\z/, message: "must be in E.164 format" }, allow_blank: true
-  validates :timezone, presence: true
+  validate :timezone_must_be_valid
   validates :uid, uniqueness: { scope: :provider }
 
   def self.from_omniauth(auth)
@@ -13,7 +13,17 @@ class User < ApplicationRecord
       user.email = auth.info.email
       user.provider = auth.provider
       user.uid = auth.uid
-      user.timezone = "UTC" # Default, can be updated later
+      # timezone will be nil initially, detected on first page load
+    end
+  end
+
+  private
+
+  def timezone_must_be_valid
+    return if timezone.blank?
+
+    unless ActiveSupport::TimeZone[timezone]
+      errors.add(:timezone, "must be a valid IANA timezone (e.g., 'America/New_York')")
     end
   end
 end

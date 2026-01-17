@@ -5,7 +5,7 @@ class CreateUsers < ActiveRecord::Migration[8.0]
       t.string :provider, null: false
       t.string :uid, null: false
       t.string :phone
-      t.string :timezone, default: "UTC", null: false
+      t.string :timezone
 
       t.timestamps
     end

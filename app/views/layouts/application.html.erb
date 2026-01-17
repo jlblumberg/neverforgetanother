@@ -31,6 +31,7 @@
         <div class="flex items-center gap-4">
           <% if logged_in? %>
             <%= link_to "Reminders", reminders_path, class: "text-gray-600 hover:text-gray-900" %>
+            <%= link_to "Settings", settings_path, class: "text-gray-600 hover:text-gray-900" %>
             <span class="text-gray-600"><%= current_user.email %></span>
             <%= button_to "Sign out", logout_path, method: :delete, class: "text-gray-600 hover:text-gray-900" %>
           <% end %>
@@ -50,5 +51,19 @@
       <% end %>
       <%= yield %>
     </main>
+    
+    <% if logged_in? && current_user.timezone.nil? %>
+      <script>
+        // Detect user's timezone on first page load after login
+        // Only runs once ever (when timezone is unset)
+        (function() {
+          if (typeof window.detectAndUpdateTimezone === 'function') {
+            window.detectAndUpdateTimezone('<%= update_timezone_path %>', {
+              showAlerts: false // Silent on first load
+            });
+          }
+        })();
+      </script>
+    <% end %>
   </body>
 </html>

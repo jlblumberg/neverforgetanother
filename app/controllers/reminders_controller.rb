@@ -19,6 +19,11 @@ class RemindersController < ApplicationController
   end
 
   def create
+    unless current_user.timezone.present?
+      redirect_to settings_path, alert: "Please set your timezone before creating reminders."
+      return
+    end
+
     @reminder = current_user.reminders.build(reminder_params)
     
     # Convert user's local timezone to UTC for storage
@@ -35,6 +40,11 @@ class RemindersController < ApplicationController
   end
 
   def update
+    unless current_user.timezone.present?
+      redirect_to settings_path, alert: "Please set your timezone before updating reminders."
+      return
+    end
+
     # Convert user's local timezone to UTC for storage
     convert_started_time_to_utc
 
@@ -68,12 +78,9 @@ class RemindersController < ApplicationController
   def convert_started_time_to_utc
     return unless params[:reminder][:started].present?
 
-    user_timezone = current_user.timezone || "UTC"
-    # Parse the datetime string as if it's in the user's configured timezone, then convert to UTC
+    # Parse the datetime string in the user's timezone, then convert to UTC
     # The datetime_local_field sends a string like "2026-01-20T14:30" which we interpret in user's timezone
-    Time.use_zone(user_timezone) do
-      parsed_time = Time.zone.parse(params[:reminder][:started])
-      @reminder.started = parsed_time.utc if parsed_time
-    end
+    parsed_time = Time.use_zone(current_user.timezone) { Time.zone.parse(params[:reminder][:started]) }
+    @reminder.started = parsed_time.utc if parsed_time
   end
 end
