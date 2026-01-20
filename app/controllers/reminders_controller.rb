@@ -3,12 +3,11 @@ class RemindersController < ApplicationController
   before_action :set_reminder, only: [:show, :edit, :update, :cancel, :uncancel]
 
   def index
-    @show_cancelled = params[:show_cancelled] == "true"
-    @reminders = if @show_cancelled
-      current_user.reminders.order(created_at: :desc)
-    else
-      current_user.reminders.active.order(created_at: :desc)
-    end
+    all_active = current_user.reminders.active.order(created_at: :desc).to_a
+    @active_reminders = all_active.reject(&:completed?)
+    completed_reminders = all_active.select(&:completed?)
+    cancelled_reminders = current_user.reminders.cancelled.order(created_at: :desc).to_a
+    @archived_reminders = (completed_reminders + cancelled_reminders).sort_by(&:created_at).reverse
   end
 
   def show
@@ -57,12 +56,12 @@ class RemindersController < ApplicationController
 
   def cancel
     @reminder.cancel!
-    redirect_to @reminder, notice: "Reminder cancelled successfully!"
+    redirect_back(fallback_location: reminders_path, notice: "Reminder cancelled successfully!")
   end
 
   def uncancel
     @reminder.update(cancelled: nil)
-    redirect_to @reminder, notice: "Reminder reactivated successfully!"
+    redirect_back(fallback_location: reminders_path, notice: "Reminder reactivated successfully!")
   end
 
   private

@@ -1,1 +1,28 @@
 @import "tailwindcss";
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
+
+/* Fix alignment for inline forms (from button_to) in flex containers */
+form.inline {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: baseline;
+}
+
+/* Rotate chevron when details element is open */
+details[open] .details-chevron {
+  transform: rotate(180deg);
+}

@@ -1,0 +1,43 @@
+<div class="py-5 first:pt-0">
+  <div class="flex items-start justify-between gap-4">
+    <div class="flex-1 min-w-0">
+      <%= link_to reminder, class: "group block" do %>
+        <h2 class="text-base font-medium text-gray-900 group-hover:text-gray-700 mb-2">
+          <%= reminder.title %>
+        </h2>
+        <p class="text-sm text-gray-500 mb-3"><%= reminder.description %></p>
+        <div class="flex items-center gap-4 text-xs text-gray-400">
+          <span><%= reminder.started.in_time_zone(current_user.timezone).strftime("%b %d, %Y at %I:%M %p") %></span>
+          <span>•</span>
+          <span><%= reminder.period.humanize %></span>
+          <span>•</span>
+          <span><%= reminder.delivery_methods_humanized %></span>
+          <% if reminder.cancelled.present? || reminder.completed? %>
+            <span>•</span>
+            <span>
+              <% if reminder.cancelled.present? %>
+                Cancelled
+              <% elsif reminder.completed? %>
+                Completed
+              <% end %>
+            </span>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+    <% unless reminder.completed? %>
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <% if reminder.cancelled.present? %>
+          <%= button_to "Reactivate", uncancel_reminder_path(reminder), method: :post, 
+              class: "text-sm text-gray-500 hover:text-gray-900 bg-transparent border-0 p-0 cursor-pointer font-normal", form: { class: "inline m-0 p-0" } %>
+        <% else %>
+          <%= link_to "Edit", edit_reminder_path(reminder), class: "text-sm text-gray-500 hover:text-gray-900" %>
+          <%= button_to "Cancel", cancel_reminder_path(reminder), method: :post, 
+              data: { confirm: "Are you sure you want to cancel this reminder?" }, 
+              class: "text-sm text-gray-500 hover:text-gray-900 bg-transparent border-0 p-0 cursor-pointer font-normal", form: { class: "inline m-0 p-0" } %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>
+

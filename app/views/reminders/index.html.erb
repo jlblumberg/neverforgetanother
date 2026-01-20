@@ -1,65 +1,51 @@
-<div class="w-full">
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="font-bold text-4xl">My Reminders</h1>
-    <div class="flex gap-2">
-      <% if @show_cancelled %>
-        <%= link_to "Show Active Only", reminders_path, class: "bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition text-sm" %>
-      <% else %>
-        <%= link_to "Show Cancelled", reminders_path(show_cancelled: true), class: "bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition text-sm" %>
-      <% end %>
-      <%= link_to "New Reminder", new_reminder_path, class: "bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition border-0 cursor-pointer" %>
+<div class="w-full max-w-5xl mx-auto">
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">Reminders</h1>
+      <p class="text-sm text-gray-500 mt-1">
+        <% if @active_reminders.count.zero? %>
+          No active reminders
+        <% else %>
+          <%= @active_reminders.count %> active
+        <% end %>
+      </p>
+    </div>
+    <div>
+      <%= link_to "New reminder", new_reminder_path, class: "inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-md transition" %>
     </div>
   </div>
 
-  <% if @reminders.any? %>
-    <div class="space-y-4">
-      <% @reminders.each do |reminder| %>
-        <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition">
-          <div class="flex justify-between items-start">
-            <div class="flex-1">
-              <h2 class="font-bold text-xl mb-2">
-                <%= link_to reminder.title, reminder, class: "text-gray-900 hover:text-blue-600" %>
-              </h2>
-              <p class="text-gray-600 mb-3"><%= reminder.description %></p>
-              <div class="flex flex-wrap gap-4 text-sm text-gray-500">
-                <span>
-                  <strong>Starts:</strong> 
-                  <%= reminder.started.in_time_zone(current_user.timezone).strftime("%B %d, %Y at %I:%M %p") %>
-                </span>
-                <span>
-                  <strong>Period:</strong> <%= reminder.period.humanize %>
-                </span>
-                <span>
-                  <strong>Delivery:</strong> <%= reminder.delivery_methods_humanized %>
-                </span>
-                <% if reminder.cancelled.present? %>
-                  <span class="text-red-600">
-                    <strong>Cancelled:</strong> <%= reminder.cancelled.in_time_zone(current_user.timezone).strftime("%B %d, %Y") %>
-                  </span>
-                <% else %>
-                  <span class="text-green-600 font-semibold">Active</span>
-                <% end %>
-              </div>
-            </div>
-            <div class="flex gap-2 ml-4">
-              <%= link_to "Edit", edit_reminder_path(reminder), class: "text-blue-600 hover:text-blue-800 text-sm" %>
-              <% if reminder.cancelled.present? %>
-                <%= button_to "Reactivate", uncancel_reminder_path(reminder), method: :post, 
-                    class: "text-green-600 hover:text-green-800 text-sm" %>
-              <% else %>
-                <%= button_to "Cancel", cancel_reminder_path(reminder), method: :post, 
-                    data: { confirm: "Are you sure you want to cancel this reminder?" }, 
-                    class: "text-red-600 hover:text-red-800 text-sm" %>
-              <% end %>
-            </div>
+  <% if @active_reminders.any? || @archived_reminders.any? %>
+    <% if @active_reminders.any? %>
+      <div class="divide-y divide-gray-100 mb-8">
+        <% @active_reminders.each do |reminder| %>
+          <%= render "reminder_item", reminder: reminder %>
+        <% end %>
+      </div>
+    <% elsif @archived_reminders.any? %>
+      <div class="mb-20"></div>
+    <% end %>
+
+    <% if @archived_reminders.any? %>
+      <details data-controller="details" data-details-storage-key-value="archived_reminders_open" data-action="toggle->details#toggle">
+        <summary class="cursor-pointer list-none">
+          <div class="flex items-center justify-between py-3 border-t border-gray-200">
+            <span class="text-sm font-normal text-gray-500">Archived reminders</span>
+            <svg class="w-4 h-4 transition-transform details-chevron text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
           </div>
+        </summary>
+        <div class="divide-y divide-gray-100 mt-2">
+          <% @archived_reminders.each do |reminder| %>
+            <%= render "reminder_item", reminder: reminder %>
+          <% end %>
         </div>
-      <% end %>
-    </div>
+      </details>
+    <% end %>
   <% else %>
-    <div class="bg-gray-50 border border-gray-200 rounded-lg p-12 text-center">
-      <p class="text-gray-600 text-lg mb-4">You don't have any reminders yet.</p>
-      <%= link_to "Create your first reminder", new_reminder_path, class: "bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition inline-block" %>
+    <div class="text-center py-16">
+      <p class="text-sm text-gray-500">No reminders yet.</p>
     </div>
   <% end %>
 </div>

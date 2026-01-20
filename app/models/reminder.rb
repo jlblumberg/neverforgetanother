@@ -24,6 +24,19 @@ class Reminder < ApplicationRecord
     cancelled.nil?
   end
 
+  def completed?
+    return false unless active?
+    return false unless one_off?
+    
+    # Check if ReminderDelivery association exists and reminder has been sent
+    if respond_to?(:reminder_deliveries) && reminder_deliveries.exists?
+      true
+    else
+      # If no delivery tracking yet, check if started time is in the past
+      started <= Time.current
+    end
+  end
+
   def cancel!
     update(cancelled: Time.current)
   end
