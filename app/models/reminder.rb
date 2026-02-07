@@ -1,5 +1,6 @@
 class Reminder < ApplicationRecord
   belongs_to :user
+  has_many :reminder_deliveries, dependent: :destroy
 
   enum :period, {
     one_off: 0,
@@ -49,7 +50,7 @@ class Reminder < ApplicationRecord
 
     # Check if ReminderDelivery association exists (will be created in Phase 5)
     if respond_to?(:reminder_deliveries)
-      last_delivery = reminder_deliveries.order(sent: :desc).first
+      last_delivery = reminder_deliveries.order(scheduled_at: :desc).first
 
       if last_delivery.nil?
         # No deliveries yet, use the started time
@@ -58,8 +59,8 @@ class Reminder < ApplicationRecord
         # One-off reminders only send once
         nil
       else
-        # Recurring reminders: calculate from last delivery + period
-        last_delivery.sent + period_duration
+        # Recurring reminders: calculate from last delivery's scheduled_at + period (anchor on scheduled_at, not sent_at)
+        last_delivery.scheduled_at + period_duration
       end
     else
       # ReminderDelivery model doesn't exist yet, just use started time
