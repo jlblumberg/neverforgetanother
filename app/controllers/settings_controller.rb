@@ -26,4 +26,18 @@ class SettingsController < ApplicationController
       end
     end
   end
+
+  def update_phone
+    if current_user.update(phone: params[:phone].to_s.strip.presence)
+      respond_to do |format|
+        format.json { head :ok }
+        format.html { redirect_to settings_path, notice: "Phone number updated." }
+      end
+    else
+      respond_to do |format|
+        format.json { head :unprocessable_entity }
+        format.html { redirect_to settings_path, alert: current_user.errors.full_messages.to_sentence }
+      end
+    end
+  end
 end

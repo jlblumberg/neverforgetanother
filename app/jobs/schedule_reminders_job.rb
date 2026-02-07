@@ -5,8 +5,9 @@ class ScheduleRemindersJob < ApplicationJob
     Reminder.active.includes(:reminder_deliveries).find_each do |reminder|
       next unless reminder.due?
 
-      # due? guarantees next_send_time is present and <= now
+      # due? guarantees next_send_time is present and <= now (re-check in case reminder was cancelled)
       scheduled_at = reminder.next_send_time
+      next if scheduled_at.nil?
 
       reminder.delivery_methods.each do |channel|
         create_and_enqueue_delivery(reminder, channel, scheduled_at)

@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   
   get '/settings', to: 'settings#show', as: :settings
   patch '/settings/timezone', to: 'settings#update_timezone', as: :update_timezone
+  patch '/settings/phone', to: 'settings#update_phone', as: :update_phone
   
   # OAuth routes - POST for initiation (CSRF-safe), GET for callback
   post '/auth/:provider', to: 'omniauth#passthru', as: :omniauth_authorize

@@ -2,6 +2,12 @@ class Reminder < ApplicationRecord
   belongs_to :user
   has_many :reminder_deliveries, dependent: :destroy
 
+  # SMS: 160 chars total; body = prefix + title + separator + description
+  SMS_PREFIX = "Reminder from neverforgetanother.com: "
+  SMS_SEPARATOR = " - "
+  SMS_MAX_LENGTH = 160
+  SMS_BODY_MAX = SMS_MAX_LENGTH - SMS_PREFIX.length - SMS_SEPARATOR.length # 121
+
   enum :period, {
     one_off: 0,
     daily: 1,
@@ -17,6 +23,8 @@ class Reminder < ApplicationRecord
   validates :period, presence: true
   validate :started_must_be_in_future
   validate :at_least_one_delivery_method
+  validate :sms_body_fits_when_sms_enabled, if: :sms_enabled?
+  validate :user_has_phone_when_sms_enabled, if: :sms_enabled?
 
   scope :active, -> { where(cancelled: nil) }
   scope :cancelled, -> { where.not(cancelled: nil) }
@@ -90,6 +98,18 @@ class Reminder < ApplicationRecord
     unless email_enabled? || sms_enabled?
       errors.add(:base, "At least one delivery method must be selected")
     end
+  end
+
+  def sms_body_fits_when_sms_enabled
+    return unless title && description
+    total = title.length + description.length
+    return if total <= SMS_BODY_MAX
+    errors.add(:base, "Title and description together must be #{SMS_BODY_MAX} characters or less for SMS (currently #{total})")
+  end
+
+  def user_has_phone_when_sms_enabled
+    return if user&.phone.present?
+    errors.add(:base, "Phone number is required for SMS reminders. Add one in Settings.")
   end
 
   def period_duration
