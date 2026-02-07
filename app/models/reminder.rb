@@ -28,53 +28,36 @@ class Reminder < ApplicationRecord
   def completed?
     return false unless active?
     return false unless one_off?
-    
-    # Check if ReminderDelivery association exists and reminder has been sent
-    if respond_to?(:reminder_deliveries) && reminder_deliveries.exists?
-      true
-    else
-      # If no delivery tracking yet, check if started time is in the past
-      started <= Time.current
-    end
+
+    # One-off is completed only when every configured channel has at least one sent delivery
+    delivery_methods.all? { |channel| reminder_deliveries.sent.where(channel: channel).exists? }
   end
 
   def cancel!
     update(cancelled: Time.current)
   end
 
-  # Calculate the next time this reminder should be sent
-  # Returns nil if reminder is cancelled or if it's a one-off that's already been sent
-  # Note: This will work fully once ReminderDelivery model is created in Phase 5
+  # Calculate the next time this reminder should be sent.
+  # One-off: returns started until completed? (all channels sent), then nil — keeps reminder due so scheduler can create/enqueue missing channel deliveries.
+  # Recurring: anchors on scheduled_at (not sent_at) so late sends don't slide the schedule.
   def next_send_time
     return nil unless active?
 
-    # Check if ReminderDelivery association exists (will be created in Phase 5)
-    if respond_to?(:reminder_deliveries)
-      last_delivery = reminder_deliveries.order(scheduled_at: :desc).first
+    last_delivery = reminder_deliveries.order(scheduled_at: :desc).first
 
-      if last_delivery.nil?
-        # No deliveries yet, use the started time
-        started
-      elsif one_off?
-        # One-off reminders only send once
-        nil
-      else
-        # Recurring reminders: calculate from last delivery's scheduled_at + period (anchor on scheduled_at, not sent_at)
-        last_delivery.scheduled_at + period_duration
-      end
-    else
-      # ReminderDelivery model doesn't exist yet, just use started time
+    if last_delivery.nil?
       started
+    elsif one_off?
+      completed? ? nil : started
+    else
+      last_delivery.scheduled_at + period_duration
     end
   end
 
-  # Check if this reminder is due to be sent now
+  # Check if this reminder is due to be sent now.
+  # Derived from next_send_time only (which is nil for one-off once any delivery exists), so no gap vs completed?
   def due?
     return false unless active?
-
-    if respond_to?(:reminder_deliveries)
-      return false if one_off? && reminder_deliveries.exists?
-    end
 
     next_time = next_send_time
     return false if next_time.nil?
