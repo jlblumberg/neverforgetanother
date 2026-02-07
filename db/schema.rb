@@ -10,9 +10,23 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_17_211402) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_07_163033) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "reminder_deliveries", force: :cascade do |t|
+    t.integer "attempt_count", default: 0, null: false
+    t.integer "channel", null: false
+    t.datetime "created_at", null: false
+    t.text "error_message"
+    t.bigint "reminder_id", null: false
+    t.datetime "scheduled_at", null: false
+    t.datetime "sent_at"
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["reminder_id", "scheduled_at", "channel"], name: "index_reminder_deliveries_on_reminder_scheduled_at_channel", unique: true
+    t.index ["reminder_id"], name: "index_reminder_deliveries_on_reminder_id"
+  end
 
   create_table "reminders", force: :cascade do |t|
     t.datetime "cancelled"
@@ -40,5 +54,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_17_211402) do
     t.index ["provider", "uid"], name: "index_users_on_provider_and_uid", unique: true
   end
 
+  add_foreign_key "reminder_deliveries", "reminders"
   add_foreign_key "reminders", "users"
 end
