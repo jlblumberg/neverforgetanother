@@ -44,8 +44,20 @@ class SendReminderJob < ApplicationJob
     if delivery.email?
       ReminderMailer.reminder_email(delivery.reminder).deliver_now
     elsif delivery.sms?
-      # Configure Twilio (or another provider) and replace this with the actual send.
-      raise "SMS delivery not configured. Add a provider (e.g. Twilio) in SendReminderJob#send_via_channel."
+      send_sms_via_telnyx(delivery)
     end
+  end
+
+  def send_sms_via_telnyx(delivery)
+    raise "TELNYX_API_KEY is not set" if ENV["TELNYX_API_KEY"].blank?
+    raise "TELNYX_PHONE_NUMBER is not set" if ENV["TELNYX_PHONE_NUMBER"].blank?
+
+    reminder = delivery.reminder
+    to = reminder.user.phone
+    raise "User has no phone number" if to.blank?
+
+    body = "#{Reminder::SMS_PREFIX}#{reminder.title}#{Reminder::SMS_SEPARATOR}#{reminder.description}"
+    client = Telnyx::Client.new(api_key: ENV["TELNYX_API_KEY"])
+    client.messages.send_(from: ENV["TELNYX_PHONE_NUMBER"], to: to, text: body)
   end
 end
