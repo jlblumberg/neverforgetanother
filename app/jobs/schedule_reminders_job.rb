@@ -17,6 +17,7 @@ class ScheduleRemindersJob < ApplicationJob
   private
 
   def create_and_enqueue_delivery(reminder, channel, scheduled_at)
+    delivery = nil
     return if reminder.reminder_deliveries.exists?(scheduled_at: scheduled_at, channel: channel)
 
     delivery = reminder.reminder_deliveries.build(
@@ -29,5 +30,9 @@ class ScheduleRemindersJob < ApplicationJob
     SendReminderJob.perform_later(delivery.id)
   rescue ActiveRecord::RecordNotUnique
     # Another scheduler run or worker created it; skip
+  rescue StandardError
+    # Enqueue failed after save!; remove orphan so next run will create and enqueue again
+    delivery&.destroy
+    raise
   end
 end
