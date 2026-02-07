@@ -46,6 +46,10 @@ Rails.application.configure do
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 
+  # Use Solid Queue so bin/jobs can run the scheduler and workers (same as production).
+  config.active_job.queue_adapter = :solid_queue
+  config.solid_queue.connects_to = { database: { writing: :queue } }
+
   # Raise an error on page load if there are pending migrations.
   config.active_record.migration_error = :page_load
 
