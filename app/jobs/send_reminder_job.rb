@@ -3,6 +3,9 @@
 class SendReminderJob < ApplicationJob
   queue_as :default
 
+  # Without this, Solid Queue does not retry on raise; the delivery would only be attempted once.
+  retry_on StandardError, wait: :polynomially_longer, attempts: 3
+
   MAX_ATTEMPTS = 3
 
   def perform(reminder_delivery_id)
