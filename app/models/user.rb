@@ -4,7 +4,7 @@ class User < ApplicationRecord
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :provider, presence: true
   validates :uid, presence: true
-  validates :phone, phone: { countries: [:us], message: "must be a valid US phone number (e.g. +1 415 555 1234)" }, allow_blank: true
+  validates :phone, phone: { countries: [:us], message: "must be a valid US phone number e.g. +1 (415) 555-1234" }, allow_blank: true
   validate :timezone_must_be_valid
   validates :uid, uniqueness: { scope: :provider }
 

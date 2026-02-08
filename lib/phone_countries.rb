@@ -1,5 +1,5 @@
 # Central list of countries for the phone number form. Each entry is
-# [ "Label (+N)", ISO_country_code, dial_code ]. Currently US only for SMS.
+# [ "Label (+N)", ISO_country_code, dial_code ]. Currently US only for text.
 module PhoneCountries
   LIST = [
     ["United States (+1)", "US", "1"],

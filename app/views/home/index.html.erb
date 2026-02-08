@@ -2,7 +2,7 @@
   <div class="space-y-8 pt-12">
     <div>
       <h1 class="text-4xl font-semibold text-gray-900 tracking-tight mb-4">Never Forget Another</h1>
-      <p class="text-lg text-gray-600 leading-relaxed">Schedule SMS and email reminders so you don't forget to do things.</p>
+      <p class="text-lg text-gray-600 leading-relaxed">Schedule text and email reminders so you don't forget to do things.</p>
     </div>
     <%= form_with url: "/auth/google", method: :post, local: true, data: { turbo: false }, class: "inline-block" do |f| %>
       <%= f.submit "Sign in with Google", class: "inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-md transition" %>

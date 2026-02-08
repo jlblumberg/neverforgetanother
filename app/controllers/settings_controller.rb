@@ -3,6 +3,7 @@ class SettingsController < ApplicationController
 
   def show
     set_phone_form_values_from_user
+    @phone_country_code = "US"
   end
 
   def update_timezone
@@ -50,7 +51,7 @@ class SettingsController < ApplicationController
     end
 
     unless country_iso == "US"
-      current_user.errors.add(:phone, "Only US phone numbers are supported for SMS.")
+      current_user.errors.add(:phone, "Only US phone numbers are supported for text.")
       @phone_country_code = country_iso
       @phone_number = phone_number
       render :show, status: :unprocessable_entity
@@ -80,7 +81,7 @@ class SettingsController < ApplicationController
     return if current_user.phone.blank?
 
     parsed = Phonelib.parse(current_user.phone)
-    # Prefer stored selection; fall back to Phonelib when blank. US-only for SMS.
+    # Prefer stored selection; fall back to Phonelib when blank. US-only for text.
     @phone_country_code = @phone_country_code.presence || current_user.phone_country_iso.presence || parsed.country
     @phone_number = @phone_number.presence || parsed.national_number
   end

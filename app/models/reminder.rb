@@ -2,7 +2,7 @@ class Reminder < ApplicationRecord
   belongs_to :user
   has_many :reminder_deliveries, dependent: :destroy
 
-  # SMS: 160 chars total; body = prefix + title + separator + description
+  # Text: 160 chars total; body = prefix + title + separator + description
   SMS_PREFIX = "Reminder from neverforgetanother.com: "
   SMS_SEPARATOR = " - "
   SMS_MAX_LENGTH = 160
@@ -104,12 +104,12 @@ class Reminder < ApplicationRecord
     return unless title && description
     total = title.length + description.length
     return if total <= SMS_BODY_MAX
-    errors.add(:base, "Title and description together must be #{SMS_BODY_MAX} characters or less for SMS (currently #{total})")
+    errors.add(:base, "Title and description together must be #{SMS_BODY_MAX} characters or less for text (currently #{total})")
   end
 
   def user_has_phone_when_sms_enabled
     return if user&.phone.present?
-    errors.add(:base, "Phone number is required for SMS reminders. Add one in Settings.")
+    errors.add(:base, "Phone number is required for text reminders. Add one in Settings.")
   end
 
   def period_duration
