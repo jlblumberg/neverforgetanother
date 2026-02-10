@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_08_171200) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_10_024935) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -23,6 +23,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_08_171200) do
     t.datetime "scheduled_at", null: false
     t.datetime "sent_at"
     t.integer "status", default: 0, null: false
+    t.string "telnyx_message_id"
     t.datetime "updated_at", null: false
     t.index ["reminder_id", "scheduled_at", "channel"], name: "index_reminder_deliveries_on_reminder_scheduled_at_channel", unique: true
     t.index ["reminder_id"], name: "index_reminder_deliveries_on_reminder_id"
@@ -47,11 +48,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_08_171200) do
     t.string "email", null: false
     t.string "phone"
     t.string "phone_country_iso"
+    t.datetime "phone_verified_at"
     t.string "provider", null: false
     t.string "timezone"
     t.string "uid", null: false
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["phone"], name: "index_users_on_phone", unique: true, where: "(phone IS NOT NULL)"
     t.index ["provider", "uid"], name: "index_users_on_provider_and_uid", unique: true
   end
 
