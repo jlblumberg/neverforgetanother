@@ -1,14 +1,26 @@
 class User < ApplicationRecord
+  PHONE_CHANGE_COOLDOWN_DAYS = 30
+
   has_many :reminders, dependent: :destroy
 
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :provider, presence: true
   validates :uid, presence: true
   validates :phone, phone: { countries: [:us], message: "must be a valid US phone number e.g. +1 (415) 555-1234" }, allow_blank: true
+  validates :phone, uniqueness: true, allow_blank: true
   validate :timezone_must_be_valid
   validates :uid, uniqueness: { scope: :provider }
 
   before_validation :normalize_phone
+
+  def phone_verified?
+    phone.present? && phone_verified_at.present?
+  end
+
+  def phone_change_allowed?
+    return true if phone_verified_at.blank?
+    phone_verified_at < PHONE_CHANGE_COOLDOWN_DAYS.days.ago
+  end
 
   def self.from_omniauth(auth)
     where(provider: auth.provider, uid: auth.uid).first_or_create do |user|

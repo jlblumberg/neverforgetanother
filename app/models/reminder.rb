@@ -108,8 +108,8 @@ class Reminder < ApplicationRecord
   end
 
   def user_has_phone_when_sms_enabled
-    return if user&.phone.present?
-    errors.add(:base, "Phone number is required for text reminders. Add one in Settings.")
+    return if user&.phone_verified?
+    errors.add(:base, "A verified phone number is required for text reminders. Add and verify one in Settings.")
   end
 
   def period_duration

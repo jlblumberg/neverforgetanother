@@ -41,40 +41,66 @@
     <div class="pt-8">
       <h2 class="text-sm font-medium text-gray-900 mb-1">Phone number</h2>
       <p class="text-sm text-gray-500 mb-4">
-        Required for text reminders. For the time being we support US phone numbers only.
+        Required for text reminders. We'll send a verification code to confirm you own the number. US only.
       </p>
       <% if current_user.errors[:phone].any? %>
         <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm" role="alert">
           <%= current_user.errors[:phone].to_sentence %>
         </div>
       <% end %>
-      <%= form_with url: update_phone_path, method: :patch, local: true, class: "space-y-4", data: { controller: "phone-format" } do |f| %>
-        <%= f.hidden_field :phone_country_code, value: "US" %>
-        <div class="grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-4">
-          <div>
-            <%= f.label :phone_country_code, "Country", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
-            <%= f.select :phone_country_code,
-                options_for_select(phone_country_code_options, @phone_country_code),
-                {},
-                {
-                  disabled: true,
-                  class: "w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed #{'border-red-300' if current_user.errors[:phone].any?}",
-                } %>
-          </div>
-          <div>
-            <%= f.label :phone_number, "Phone number", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
-            <%= f.telephone_field :phone_number,
-                value: @phone_number,
-                placeholder: "(415) 555-1234",
-                required: true,
-                class: "w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white #{'border-red-300 focus:ring-red-500 focus:border-red-500' if current_user.errors[:phone].any?}",
-                autocomplete: "tel-national",
-                data: { phone_format_target: "input", action: "input->phone-format#format" } %>
-          </div>
+
+      <% if @show_otp_form %>
+        <div class="space-y-4">
+          <p class="text-sm text-gray-600">
+            Code sent to <span class="font-medium"><%= @pending_phone %></span>. Code expires in 5 minutes.
+          </p>
+          <%= form_with url: verify_phone_path, method: :patch, local: true, class: "space-y-4" do |f| %>
+            <div>
+              <%= f.label :code, "Verification code", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+              <%= f.text_field :code,
+                  value: "",
+                  placeholder: "000000",
+                  required: true,
+                  maxlength: 6,
+                  inputmode: "numeric",
+                  autocomplete: "one-time-code",
+                  pattern: "[0-9]*",
+                  class: "w-full max-w-[8rem] px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white font-mono text-lg tracking-widest" %>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+              <%= f.submit "Verify", class: "inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-md transition cursor-pointer" %>
+            </div>
+          <% end %>
+          <%= button_to "Resend code", send_otp_phone_path, method: :post, class: "text-sm text-gray-600 hover:text-gray-900 underline", form_class: "inline" %>
         </div>
-        <%= f.submit "Update phone", class: "inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-md transition cursor-pointer" %>
+      <% else %>
+        <%= form_with url: send_otp_phone_path, method: :post, local: true, class: "space-y-4", data: { controller: "phone-format" } do |f| %>
+          <%= f.hidden_field :phone_country_code, value: @phone_country_code || "US" %>
+          <div class="grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-4">
+            <div>
+              <%= f.label :phone_country_code, "Country", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+              <%= f.select :phone_country_code,
+                  options_for_select(phone_country_code_options, @phone_country_code),
+                  {},
+                  {
+                    disabled: true,
+                    class: "w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed #{'border-red-300' if current_user.errors[:phone].any?}",
+                  } %>
+            </div>
+            <div>
+              <%= f.label :phone_number, "Phone number", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+              <%= f.telephone_field :phone_number,
+                  value: @phone_number,
+                  placeholder: "(415) 555-1234",
+                  required: true,
+                  class: "w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white #{'border-red-300 focus:ring-red-500 focus:border-red-500' if current_user.errors[:phone].any?}",
+                  autocomplete: "tel-national",
+                  data: { phone_format_target: "input", action: "input->phone-format#format" } %>
+            </div>
+          </div>
+          <%= f.submit "Send code", class: "inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-md transition cursor-pointer" %>
+        <% end %>
       <% end %>
     </div>
   </div>
 </div>
-

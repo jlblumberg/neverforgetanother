@@ -26,8 +26,9 @@ class SendReminderJob < ApplicationJob
 
     delivery.increment!(:attempt_count)
 
-    send_via_channel(delivery)
-    delivery.update_columns(sent_at: Time.current, status: ReminderDelivery.statuses[:sent])
+    if send_via_channel(delivery)
+      delivery.update_columns(sent_at: Time.current, status: ReminderDelivery.statuses[:sent])
+    end
   rescue StandardError => e
     if delivery
       delivery.update_columns(error_message: e.message)
@@ -46,8 +47,11 @@ class SendReminderJob < ApplicationJob
   def send_via_channel(delivery)
     if delivery.email?
       ReminderMailer.reminder_email(delivery.reminder).deliver_now
+      true
     elsif delivery.sms?
       send_sms_via_telnyx(delivery)
+    else
+      true
     end
   end
 
@@ -56,11 +60,20 @@ class SendReminderJob < ApplicationJob
     raise "TELNYX_PHONE_NUMBER is not set" if ENV["TELNYX_PHONE_NUMBER"].blank?
 
     reminder = delivery.reminder
-    to = reminder.user.phone
+    user = reminder.user
+    unless user.phone_verified?
+      delivery.update_columns(status: ReminderDelivery.statuses[:failed], error_message: "User phone not verified")
+      return false
+    end
+
+    to = user.phone
     raise "User has no phone number" if to.blank?
 
     body = "#{Reminder::SMS_PREFIX}#{reminder.title}#{Reminder::SMS_SEPARATOR}#{reminder.description}"
     client = Telnyx::Client.new(api_key: ENV["TELNYX_API_KEY"])
-    client.messages.send_(from: ENV["TELNYX_PHONE_NUMBER"], to: to, text: body)
+    response = client.messages.send_(from: ENV["TELNYX_PHONE_NUMBER"], to: to, text: body)
+    telnyx_id = response.data&.id
+    delivery.update_column(:telnyx_message_id, telnyx_id) if telnyx_id.present?
+    true
   end
 end
